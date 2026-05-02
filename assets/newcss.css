@@ -136,7 +136,7 @@ img {
   height: auto;
 }
 .section {
-  padding: 2rem 0 4rem;
+  padding: 2rem 1rem 4rem;
 }
 .section__title {
   font-size: var(--h1-font-size);
@@ -1434,18 +1434,20 @@ body.dark-theme .testimonials__next {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Masonry Layout - Otomatis menyesuaikan Portrait & Landscape */
+/* Masonry Layout */
 .gallery__container {
-  /* 🔧 FIX 1: Batasi lebar agar sejajar dengan container nav & section lain */
-  max-width: 1140px; 
+  max-width: 1140px;
   margin: 0 auto;
   padding: 0 1rem;
   column-count: 3;
   column-gap: 1rem;
+  -webkit-column-count: 3;
+  -webkit-column-gap: 1rem;
 }
 
 .gallery__item {
-  break-inside: avoid; /* Mencegah item terpotong antar kolom */
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
   margin-bottom: 1rem;
   border-radius: 0.75rem;
   overflow: hidden;
@@ -1453,6 +1455,8 @@ body.dark-theme .testimonials__next {
   background: var(--container-color);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  display: block;
+  width: 100%;
 }
 
 .gallery__item:hover {
@@ -1460,20 +1464,19 @@ body.dark-theme .testimonials__next {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Style untuk Gambar & Video */
 .gallery__item img,
 .gallery__item video {
   width: 100%;
   height: auto;
   display: block;
+  min-height: 120px;
+  object-fit: cover;
   transition: transform 0.4s ease;
 }
 
-/* 🔧 FIX 2: CSS Khusus Video agar tampil rapi & tidak collapse */
 .gallery__item video {
-  object-fit: cover;
-  background-color: #1a1a1a; /* Fallback warna gelap */
-  min-height: 200px;         /* Pastikan video punya tinggi minimal */
+  background-color: #1a1a1a;
+  min-height: 200px;
   border-radius: 0.75rem;
 }
 
@@ -1482,7 +1485,7 @@ body.dark-theme .testimonials__next {
   transform: scale(1.05);
 }
 
-/* 🔧 FIX 3: Animasi Filter Category */
+/* Filter Animation */
 .gallery__item.hide {
   display: none;
 }
@@ -1491,56 +1494,70 @@ body.dark-theme .testimonials__next {
   animation: galleryFadeIn 0.4s ease forwards;
 }
 
-.gallery__item {
-  break-inside: avoid;
-  -webkit-column-break-inside: avoid; /* ⚠️ Wajib untuk Safari lama */
-  margin-bottom: 1rem;
-  border-radius: 0.75rem;
-  overflow: hidden;
-  background: var(--container-color);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
-  
-  /* 🔧 Fix Safari: pastikan item punya layout context */
-  display: block;
-  width: 100%;
-}
-
-.gallery__item img {
-  width: 100%;
-  height: auto;
-  display: block;
-  
-  /* 🔧 Mencegah collapse di Safari */
-  min-height: 120px; 
-  object-fit: cover;
-  background: var(--container-color); /* Placeholder warna saat loading */
-}
-
-/* 🔧 Fix khusus untuk container masonry di Safari */
-.gallery__container {
-  column-count: 3;
-  column-gap: 1rem;
-  max-width: 1140px;
-  margin: 0 auto;
+/* Load More Button */
+.gallery__load-more-wrapper {
+  text-align: center;
+  margin-top: 2rem;
   padding: 0 1rem;
-  
-  /* Safari fallback */
-  -webkit-column-count: 3;
-  -webkit-column-gap: 1rem;
 }
 
-/* Responsive tetap sama */
-@media screen and (max-width: 1024px) {
-  .gallery__container, .gallery__container { 
-    column-count: 2; 
-    -webkit-column-count: 2; 
+.gallery__load-more {
+  padding: 0.75rem 2rem;
+  background: var(--first-color);
+  color: #fff;
+  border: none;
+  border-radius: 2rem;
+  font-size: var(--small-font-size);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.gallery__load-more:hover {
+  background: var(--first-color-lighter);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.gallery__load-more:active {
+  transform: translateY(0);
+}
+
+.gallery__load-more i {
+  font-size: 1.1rem;
+}
+
+/* Hide button when all items shown */
+.gallery__load-more.hidden {
+  display: none;
+}
+
+/* Animasi item muncul */
+.gallery__item.load-in {
+  animation: galleryLoadIn 0.4s ease forwards;
+}
+
+@keyframes galleryLoadIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
+
+/* Responsive untuk tombol */
 @media screen and (max-width: 600px) {
-  .gallery__container, .gallery__container { 
-    column-count: 1; 
-    -webkit-column-count: 1; 
+  .gallery__load-more {
+    width: 100%;
+    justify-content: center;
+    padding: 0.6rem 1.5rem;
   }
 }
 
@@ -1555,15 +1572,45 @@ body.dark-theme .testimonials__next {
   }
 }
 
-/* Responsive */
+/*==================== RESPONSIVE ====================*/
+/* Tablet */
 @media screen and (max-width: 1024px) {
-  .gallery__container { column-count: 2; }
+  .gallery__container { 
+    column-count: 2; 
+    -webkit-column-count: 2; 
+  }
 }
 
+/* Mobile - 2 Columns */
 @media screen and (max-width: 600px) {
-  .gallery__container { column-count: 1; }
-  .gallery__filters { gap: 0.5rem; }
-  .gallery__filter-btn { padding: 0.4rem 1rem; font-size: var(--smaller-font-size); }
+  .gallery__container { 
+    column-count: 2; 
+    -webkit-column-count: 2;
+    column-gap: 0.5rem; 
+    -webkit-column-gap: 0.5rem;
+    padding: 0 0.5rem;
+  }
+  
+  .gallery__item {
+    margin-bottom: 0.5rem;
+  }
+  
+  .gallery__filters { 
+    gap: 0.5rem; 
+  }
+  
+  .gallery__filter-btn { 
+    padding: 0.4rem 1rem; 
+    font-size: var(--smaller-font-size); 
+  }
+}
+
+/* Very Small Screens - Optional: 1 column jika terlalu sempit */
+@media screen and (max-width: 360px) {
+  .gallery__container { 
+    column-count: 1; 
+    -webkit-column-count: 1;
+  }
 }
 
 /* Dark Mode Support */
@@ -1657,14 +1704,16 @@ body.dark-theme .gallery__filter-btn.active {
 }
 
 .footer__links {
-  display: flex;
-  flex-direction: column;
-  row-gap: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .footer__link:hover {
   color: var(--first-color-lighter);
-  transition: 0.3s;
 }
 
 .footer__social {
@@ -1687,7 +1736,7 @@ body.dark-theme .gallery__filter-btn.active {
 .footer__title,
 .footer__link,
 .footer__subtitle,
-.footer__social {
+.footer__social{
   color: #fff;
 }
 

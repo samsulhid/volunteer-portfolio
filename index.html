@@ -42,11 +42,6 @@
                 <i class="uil uil-file-alt nav__icon"></i>Certificates
               </a>
             </li>
-            <!-- <li class="nav__item">
-              <a href="#education" class="nav__link">
-                <i class="uil uil-briefcase-alt nav__icon"></i>Education
-              </a>
-            </li> -->
             <li class="nav__item">
               <a href="#gallery" class="nav__link">
                 <i class="uil uil-scenery nav__icon"></i>Gallery
@@ -539,6 +534,12 @@
             </video>
           </div>
         </div>
+
+        <div class="gallery__load-more-wrapper">
+          <button class="gallery__load-more" id="galleryLoadMore">
+            <!-- <i class="uil uil-image-plus"></i> --> View More 
+          </button>
+        </div>
       </section>
 
       <!--===================== Contact Me =====================-->
@@ -624,23 +625,26 @@
           </div>
 
           <ul class="footer__links">
-            <!-- <li>
-              <a href="#home" class="footer__link">home</a>
+            <li>
+              <a href="#home" class="footer__link">Home</a>
             </li>
             <li>
-              <a href="#about" class="footer__link">about</a>
-            </li> -->
-            <li>
-              <a href="#skills" class="footer__link">skills</a>
+              <a href="#about" class="footer__link">About</a>
             </li>
             <li>
-              <a href="#certificates" class="footer__link">certificates</a>
+              <a href="#experience" class="footer__link">Experience</a>
             </li>
             <li>
-              <a href="#education" class="footer__link">education</a>
+              <a href="#skills" class="footer__link">Skills</a>
             </li>
             <li>
-              <a href="#portfolio" class="footer__link">Portfolio</a>
+              <a href="#certificates" class="footer__link">Certificates</a>
+            </li>
+            <li>
+              <a href="#gallery" class="footer__link">Gallery</a>
+            </li>
+            <li>
+              <a href="#contact" class="footer__link">Contact</a>
             </li>
           </ul>
 
@@ -652,12 +656,12 @@
               <i class="uil uil-linkedin"></i>
             </a>
             <a href="https://www.tiktok.com/@cowboy.in_la" class="footer__social" target="_blank">
-              <i class="uil uil-music"></i> 
+              <i class="uil uil-outline"></i>
             </a>
           </div>
         </div>
         </div>
-
+    
         <p class="footer__copy">&#169;Samsul. All right reserved</p>
       </div>
     </footer>
@@ -711,51 +715,6 @@
         });
       });
 
-      document.addEventListener('DOMContentLoaded', () => {
-        const container = document.querySelector('.gallery__container');
-        // Ambil semua item, ubah ke array
-        const items = Array.from(container.querySelectorAll('.gallery__item'));
-        const filterBtns = document.querySelectorAll('.gallery__filter-btn');
-
-        // 1️⃣ URUTKAN ITEM BERDASARKAN data-order (Fixed Non-Sequential)
-        // Jika data-order tidak ada, default-nya 999 (akan ditaruh di belakang)
-        items.sort((a, b) => {
-          const orderA = parseInt(a.getAttribute('data-order')) || 999;
-          const orderB = parseInt(b.getAttribute('data-order')) || 999;
-          return orderA - orderB;
-        });
-
-        // Append kembali ke container sesuai urutan baru
-        // Ini aman dilakukan sebelum filter berjalan
-        items.forEach(item => container.appendChild(item));
-
-        // 2️⃣ Logika Filter Category
-        filterBtns.forEach(btn => {
-          btn.addEventListener('click', () => {
-            // Update tombol aktif
-            filterBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            const filterValue = btn.getAttribute('data-filter');
-
-            // Terapkan filter
-            items.forEach(item => {
-              const category = item.getAttribute('data-category');
-              if (filterValue === 'all' || category === filterValue) {
-                item.classList.remove('hide');
-                item.classList.add('show');
-              } else {
-                item.classList.remove('show');
-                item.classList.add('hide');
-              }
-            });
-          });
-        });
-
-        // Panggil filter "All" secara default agar animasi show langsung jalan
-        if (filterBtns.length > 0) filterBtns[0].click();
-      });
-
       // Keyboard Accessibility (Enter/Space to toggle)
       document.querySelectorAll('.experience__role-wrapper').forEach(wrapper => {
         wrapper.setAttribute('tabindex', '0');
@@ -783,6 +742,110 @@
       }
     </script>
 
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const container = document.querySelector('.gallery__container');
+        const items = Array.from(container.querySelectorAll('.gallery__item'));
+        const filterBtns = document.querySelectorAll('.gallery__filter-btn');
+        const loadMoreBtn = document.getElementById('galleryLoadMore');
+        
+        const ITEMS_PER_PAGE = 10; // 🔢 Jumlah item yang ditampilkan pertama kali
+        let filteredItems = [];    // Menyimpan item yang sesuai filter saat ini
+        let visibleCount = 0;      // Counter item yang sudah ditampilkan
+
+        // 🔹 Fungsi: Urutkan item berdasarkan data-order
+        function sortItemsByOrder(itemArray) {
+          return itemArray.sort((a, b) => {
+            const orderA = parseInt(a.getAttribute('data-order')) || 999;
+            const orderB = parseInt(b.getAttribute('data-order')) || 999;
+            return orderA - orderB;
+          });
+        }
+
+        // 🔹 Fungsi: Tampilkan item dengan animasi
+        function showItem(item, animate = true) {
+          item.classList.remove('hide');
+          item.classList.add('show');
+          if (animate) {
+            item.classList.add('load-in');
+            // Hapus class animasi setelah selesai agar bisa di-trigger ulang
+            setTimeout(() => item.classList.remove('load-in'), 400);
+          }
+        }
+
+        // 🔹 Fungsi: Sembunyikan item
+        function hideItem(item) {
+          item.classList.remove('show', 'load-in');
+          item.classList.add('hide');
+        }
+
+        // 🔹 Fungsi: Render item dengan pagination
+        function renderGallery(filter = 'all', reset = true) {
+          // Filter item berdasarkan kategori
+          filteredItems = items.filter(item => {
+            const category = item.getAttribute('data-category');
+            return filter === 'all' || category === filter;
+          });
+
+          // Urutkan hasil filter berdasarkan data-order
+          sortItemsByOrder(filteredItems);
+
+          // Reset tampilan jika diperlukan (saat ganti filter)
+          if (reset) {
+            visibleCount = 0;
+            items.forEach(item => hideItem(item));
+          }
+
+          // Tampilkan item sesuai batas ITEMS_PER_PAGE
+          const itemsToShow = filteredItems.slice(visibleCount, visibleCount + ITEMS_PER_PAGE);
+          
+          itemsToShow.forEach((item, index) => {
+            // Delay animasi berjenjang untuk efek cascade
+            setTimeout(() => showItem(item, reset), index * 50);
+          });
+
+          visibleCount += itemsToShow.length;
+
+          // 🔘 Tampilkan/sembunyikan tombol Load More
+          if (loadMoreBtn) {
+            if (visibleCount >= filteredItems.length) {
+              loadMoreBtn.classList.add('hidden');
+            } else {
+              loadMoreBtn.classList.remove('hidden');
+            }
+          }
+        }
+
+        // 🔹 Event Listener: Filter Buttons
+        filterBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            // Update active state button
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const filterValue = btn.getAttribute('data-filter');
+            renderGallery(filterValue, true); // Reset = true saat ganti filter
+          });
+        });
+
+        // 🔹 Event Listener: Load More Button
+        if (loadMoreBtn) {
+          loadMoreBtn.addEventListener('click', () => {
+            // Tampilkan batch berikutnya tanpa reset
+            renderGallery(
+              document.querySelector('.gallery__filter-btn.active')?.getAttribute('data-filter') || 'all',
+              false // Reset = false, lanjutkan dari posisi terakhir
+            );
+          });
+        }
+
+        // 🔹 Initialize: Tampilkan 10 item pertama dengan filter "all"
+        if (filterBtns.length > 0) {
+          filterBtns[0].classList.add('active');
+        }
+        renderGallery('all', true);
+      });
+    </script>
     <script>
      // Initialize Testimonials Swiper
       let testimonialsSwiper;
@@ -912,7 +975,7 @@
           console.log('Menu closed ❌');
         });
       });
-    </script> -->
+    </> -->
 
   </body>
 </html>
